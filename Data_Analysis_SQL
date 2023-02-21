@@ -1,0 +1,109 @@
+Una vez importado el dataset a SQL Server, me dispuse a analizarlo y limpiarlo para poder generar correctamente las consultas.
+En primer lugar realicé un analisis general del conjunto de datos, buscando obtener información general sobre la cantidad de empleados, la antigüedad promedio y
+el salario promedio de los mismos. 
+
+--Cantidad total de empleados
+ select count(employee_id) from recursos_humanos
+ 
+ -- Salario Promedio 
+select AVG(salary) from Recursos_Humanos
+
+-- Antiguedad Promedio
+select AVG(tenure) from Recursos_Humanos
+
+Posteriormente, me interesó conocer la proporción de hombres y mujeres que formaban parte de la compañía, como así también, el estado civil, la modalidad de trabajo,
+el tipo de contratación y su formación académica.
+
+--Género de empleados
+select gender, count(*) from recursos_humanos
+         group by gender 
+		 having count(*)>1 
+		 order by count(*) desc
+
+--Estado civil de empleados
+select marital_status, count(*) from recursos_humanos
+         group by marital_status 
+		 having count(*)>1 
+		 order by count(*) desc
+
+--Modalidad de trabajo
+select location, count(*) from recursos_humanos
+         group by location
+		 having count(*)>1 
+		 order by count(*) desc
+
+--Tipo de contratacion
+select employment_status, count(*) from recursos_humanos
+         group by employment_status
+		 having count(*)>1 
+		 order by count(*) desc
+
+--Formacion academica
+select education, count(*) from recursos_humanos
+         group by education
+		 having count(*)>1 
+		 order by count(*) desc
+
+Con el objetivo de finalizar la parte general del análisis, me centré en averiguar cuál era el rango etario con mayor cantidad de empleados, los principales 
+departamentos en que se centraba el mayor número de trabajadores y el nivel jerarquico que ocupaban los mismos en la organización.
+
+--Total de empleados por rangos de edad
+select  count(employee_id) from recursos_humanos where age>18 AND age<=30 
+select count(employee_id) from recursos_humanos where age>30 AND age<=40
+select count(employee_id) from recursos_humanos where age>40 AND age<=50
+select count(employee_id) from recursos_humanos where age>50 AND age<=60
+select count(employee_id) from recursos_humanos where age>60 AND age<=65
+
+--Cantidad de empleados por departamento
+select department, count(*) from recursos_humanos
+         group by department 
+		 having count(*)>1 
+		 order by count(*) desc
+
+--Cantidad de empleados por nivel jerarquico
+select job_level, count(*) from recursos_humanos
+         group by job_level
+		 having count(*)>1 
+		 order by count(*) desc
+
+Ya en el análisis más especifico, me interesaba conocer cuál había sido el número de contrataciones por año y el número de desvinculaciones. En este último me interesaba
+conocer cuántas terminaciones de contrato habian sucedido por año, si las mismas habían sido de manera voluntaria o involuntaria, cuántas desvinculaciones se habían producido 
+por departamento, y las razones si las hubiere para dichas desvinculaciones.
+
+--Contrataciones por año
+select YEAR(hire_date), count(*) from recursos_humanos
+    group by YEAR(hire_date)
+	having count(*)>1
+	order by count(*) desc
+
+-- Desvinculaciones por año
+select YEAR(term_date), count(*) from recursos_humanos
+    group by YEAR(term_date)
+	having count(*)>1
+	order by count(*) desc
+
+--Tipo de desvinculacion
+select term_type, count(*) from recursos_humanos
+         group by term_type
+		 having count(*)>1 
+		 order by count(*) desc
+
+Para obtener las desvinculaciones por departamento y las razones de desvinculación, decidí crear una Vista (view) que me mostrara únicamente los campos de aquellos empleados
+que presentaran una fecha de terminación de contrato o desvinculación.
+--Vista desvinculaciones
+create view desvinculaciones AS
+select * from recursos_humanos where term_date is not null
+
+-- Desvinculaciones por departamento
+select department,count(*) from desvinculaciones
+      group by department
+	  having count(*)>1
+	  order by count(*) desc
+
+-- Razones de desvinculacion
+select term_reason,count(*) from desvinculaciones
+      group by term_reason
+	  having count(*)>1
+	  order by count(*) desc
+
+
